@@ -1,4 +1,5 @@
 from django.contrib.auth.models import BaseUserManager
+from django.contrib.auth.hashers import make_password
 
 
 class CustomBaseUserManager(BaseUserManager):
@@ -6,7 +7,9 @@ class CustomBaseUserManager(BaseUserManager):
     Custom user model manager where email is the unique identifiers
     for authentication instead of usernames.
     """
+
     def create_user(self, email, password, **extra_fields):
+        print(email, password, extra_fields)
         """
         Create and save a user with the given email and password.
         """
@@ -18,7 +21,6 @@ class CustomBaseUserManager(BaseUserManager):
         user.is_active = True
         user.save()
         return user
-    
 
     def create_superuser(self, email, password, **extra_fields):
         """

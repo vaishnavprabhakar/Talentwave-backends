@@ -1,0 +1,37 @@
+openapi: 3.0.3
+info:
+  title: DJANGO DRF TALENT WAVE
+  version: 0.0.0
+paths:
+  /auth/reg/:
+    get:
+      operationId: auth_reg_retrieve
+      tags:
+      - auth
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: auth_reg_create
+      tags:
+      - auth
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
