@@ -3,7 +3,6 @@ from authentication.managers import CustomBaseUserManager
 from django.contrib.auth.models import AbstractBaseUser
 from phonenumber_field.modelfields import PhoneNumberField
 
-
 # Create your models here.
 
 
@@ -11,6 +10,7 @@ class User(AbstractBaseUser):
     username = models.CharField(
         max_length=100,
         unique=True,
+        blank=True
     )
     email = models.EmailField(
         max_length=154,
@@ -18,29 +18,33 @@ class User(AbstractBaseUser):
     )
     account_type = models.CharField(
         max_length=150,
-        error_messages="J - Jobseeker, R - Recruiter.",
         choices=(
             ("jobseeker", "Job Seeker"),
             ("recruiter", "Recruiter"),
         ),
+        null=True,
     )
 
     is_admin = models.BooleanField(
         default=False,
     )
 
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(
+        default=False,
+    )
 
     @property
     def is_staff(self):
         return self.is_admin
 
+    
+
+    # Simplest possible answer: True, always
     def has_perm(self, perm, obj=None):
-        # Simplest possible answer: Yes, always
         return True
 
+    # Simplest possible answer: True, always
     def has_module_perms(self, authentication):
-        # Simplest possible answer: Yes, always
         return True
 
     objects = CustomBaseUserManager()
@@ -78,7 +82,7 @@ class Profile(models.Model):
 
     updated_at = models.DateTimeField(auto_now=True, null=True)
 
-    resume = models.FileField(upload_to="profile/resumes/")
+    resume = models.FileField(blank=True, default=None)
 
     def __str__(self):
         return f"{self.user}'s Profile"

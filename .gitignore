@@ -22,7 +22,7 @@ media
 
 # C extensions
 *.so
-
+*.yml
 # Distribution / packaging
 .Python
 build/

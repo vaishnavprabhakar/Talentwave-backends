@@ -1,36 +1,51 @@
-from django.shortcuts import render
+import random
+from django.conf import settings
+from django.core.mail import send_mail
 from rest_framework.views import APIView
-from authentication.models import User
-from authentication.serializer import CustomUserSerializer, LogUserSerializer, ProfileSerializer
+from authentication.models import User, Profile
+from authentication.serializer import (
+    CustomUserSerializer,
+    LogUserSerializer,
+    ProfileSerializer,
+)
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework import status
-from authentication.auth.auth_tokens import get_tokens_for_user
 from drf_spectacular.utils import extend_schema
 from rest_framework.authentication import authenticate
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+from rest_framework.renderers import JSONRenderer
+from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework.parsers import MultiPartParser, FormParser
+from authentication.auth.auth_tokens import get_tokens_for_user
+
 # Create your views here.
 
 
 class UserRegisterApi(APIView):
-    
-    @extend_schema(responses=CustomUserSerializer)
-    def get(self, request):
-        return Response({"msg": "Register Your account."}, status=status.HTTP_200_OK)
+    renderer_classes = [JSONRenderer]
 
+    @extend_schema(responses=CustomUserSerializer)
     def post(self, request):
         serializer = CustomUserSerializer(data=request.data)
+        otp = random.randint(100000, 999999)
+        request.session["saved_otp"] = otp
         if serializer.is_valid():
-            user = User.objects.create_user(
-                email=serializer.validated_data.get("email"),
-                password=serializer.validated_data.get("password"),
-                username=serializer.validated_data.get("username"),
-                account_type=serializer.validated_data.get("account_type"),
-            )
-            get_token = get_tokens_for_user(user=user)
+            
+            get_username = serializer.data.get("username")
+          
+            request.session["user_username"] = get_username
+            
+            # send_mail(
+            #     "Account verify",
+            #     "Please verify your account",
+            #     settings.EMAIL_USER,
+            #     [get_email],
+            #     html_message=f"<b>Your Otp for verification is : {otp}</b>",
+            # )
             return Response(
-                {"data": serializer.data, "token": get_token},
-                status=status.HTTP_201_CREATED,
+                {"otp": otp},
+                status=status.HTTP_200_OK,
             )
         return Response(
             serializer.errors,
@@ -38,10 +53,43 @@ class UserRegisterApi(APIView):
         )
 
 
-class UserLogApi(APIView):
-    def get(self, request):
-        return Response({"msg": "Login here to get token."})
+# Verification of One Time Password and saving user data.
+class VerifyOtp(APIView):
 
+   
+    def post(self, request):
+    
+        get_data = request.session.get("user_username")
+
+        generated_otp = request.session.get("saved_otp")
+        entered_otp = request.data.get("entered_otp")
+       
+        try:
+            user= User.objects.get(email=get_data['email'])            
+           
+        except User.DoesNotExist as e:
+          
+            if int(generated_otp) == int(entered_otp):
+                user = User.objects.create_user(
+                    email=get_data['email'],
+                    username=get_data['username'],
+                    password=get_data['password'],
+                    account_type=get_data['account_type'],
+                )
+              
+                tokens = get_tokens_for_user(user=user)
+                return Response({"msg" : "successful", "token" : tokens}, status=status.HTTP_201_CREATED)
+        
+        return Response(
+            {"error": "Otp doesn't match"}, status=status.HTTP_429_TOO_MANY_REQUESTS
+        )
+
+
+class UserLogApi(APIView):
+    authentication_classes = [JWTAuthentication]
+    parser_classes = [FormParser, MultiPartParser, JSONParser]
+
+    @extend_schema(responses=LogUserSerializer)
     def post(self, request):
         serializer = LogUserSerializer(data=request.data)
         if serializer.is_valid():
@@ -50,25 +98,56 @@ class UserLogApi(APIView):
             user = authenticate(email=email, password=password)
             if user is not None:
                 get_token = get_tokens_for_user(user=user)
+                return Response(
+                    {"token": get_token, "msg": "login successful."},
+                    status=status.HTTP_200_OK,
+                )
             return Response(
-                {"token": get_token, "msg": "login successful."},
-                status=status.HTTP_200_OK,
+                {"info": "Invalid login credentials"},
+                status=status.HTTP_401_UNAUTHORIZED,
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserProfileApi(APIView):
-
     authentication_classes = [JWTAuthentication]
-    parser_classes = [FormParser, MultiPartParser]
-    
-    def put(self, request):
-        profile_serializer = ProfileSerializer(data=request.data, instance=request.user)
-        user_serializer = CustomUserSerializer(data=request.data, instance=request.user)
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
-        if profile_serializer.is_valid() and user_serializer.is_valid():
+    @extend_schema(responses=[ProfileSerializer, CustomUserSerializer])
+    def get(self, request):
+        request_user = request.user
+        try:
+            user_profile = request_user.profile
+      
+        except Profile.DoesNotExist:
+            return Response(
+                {"info": "No profile match found."}, status=status.HTTP_204_NO_CONTENT
+            )
+        profile_serializer = ProfileSerializer(user_profile)
+
+        data = {"userprofile": profile_serializer.data}
+        return Response(data=data, status=status.HTTP_200_OK)
+
+    @extend_schema(responses=CustomUserSerializer)
+    def put(self, request):
+        request_user = request.user.profile
+        profile_serializer = ProfileSerializer(
+            request_user, data=request.data, partial=True
+        )
+
+        if profile_serializer.is_valid():
             profile_serializer.save()
-            user_serializer.save()
-            return Response({"profile data" : profile_serializer.data, "user" : user_serializer.data}, status=status.HTTP_200_OK)
-        return Response({"profile error" : profile_serializer.errors, "user error" : user_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-    
+
+            return Response(
+                {
+                    "profile data": profile_serializer.data,
+                },
+                status=status.HTTP_200_OK,
+            )
+        return Response(
+            {
+                "profile error": profile_serializer.errors,
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
