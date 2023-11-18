@@ -28,9 +28,9 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
     def get_username(self, obj):
         email = obj.get('email', '')  
-        username = email.split('@')[0] 
-        result = self.create(obj,username)
-        return result
+        get_username = email.split('@')[0] 
+        username = self.create(obj,get_username)
+        return username
     
 
     def create(self, validated_data,username):
@@ -43,13 +43,7 @@ class LogUserSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(style={"input_type": "password"})
 
-    # def validate(self, data):
-    #     email = data.get("email")
-    #     user= User.objects.filter(email=email).exists()
-        
-    #     if user is not True:
-    #         serializers.ValidationError("Entered email already in use.")
-    #     return data
+    
 
 
 class UserSerializer(serializers.Serializer):
