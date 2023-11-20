@@ -46,21 +46,10 @@ class LogUserSerializer(serializers.Serializer):
     
 
 
-class UserSerializer(serializers.Serializer):
-    class Meta:
-        model = User
-        fields = ("username", "email")
-    
-
-    def update(self, instance, validated_data):
-        instance.username = validated_data.get("username", instance.username)
-        instance.email = validated_data.get("email", instance.email)
-        return instance
 
 
 
 class ProfileSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
 
     class Meta:
         model = Profile
@@ -73,18 +62,24 @@ class ProfileSerializer(serializers.ModelSerializer):
             "dob",
             "phone",
             "city",
-            "user",
+            
         )
 
+    def validate(self, data):
+        print(data)
+        return data
+    
+
     def update(self, instance, validated_data):
-        
+    
         instance.first_name = validated_data.get("first_name", instance.first_name)
         instance.last_name = validated_data.get("last_name", instance.last_name)
         instance.profile_image = validated_data.get(
             "profile_image", instance.profile_image
         )
         instance.bio = validated_data.get("bio", instance.bio)
-        instance.title = validated_data.get("dob", instance.dob)
+        instance.title = validated_data.get("title", instance.title)
+        instance.dob = validated_data.get("dob", instance.dob)
         instance.phone = validated_data.get("phone", instance.phone)
         instance.city = validated_data.get("city", instance.city)
         validated_user = validated_data.get("user", {})
@@ -94,4 +89,18 @@ class ProfileSerializer(serializers.ModelSerializer):
             user_data.email = validated_user.get("email", user_data.email)
             user_data.save()
         instance.save()
+        return instance
+
+
+class UserSerializer(serializers.Serializer):
+
+    profile = ProfileSerializer()
+
+    class Meta:
+        model = User
+        fields = ("username", "profile")
+    
+
+    def update(self, instance, validated_data):
+        instance.username = validated_data.get("username", instance.username)
         return instance

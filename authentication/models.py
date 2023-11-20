@@ -22,7 +22,6 @@ class User(AbstractBaseUser):
             ("jobseeker", "Job Seeker"),
             ("recruiter", "Recruiter"),
         ),
-        null=True,
     )
 
     is_admin = models.BooleanField(
@@ -59,10 +58,7 @@ class User(AbstractBaseUser):
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
-    first_name = models.CharField(
-        max_length=120,
-        null=True,
-    )
+    first_name = models.CharField(max_length=120,null=True,)
 
     last_name = models.CharField(max_length=120, null=True)
 
@@ -72,7 +68,7 @@ class Profile(models.Model):
 
     title = models.CharField(max_length=201, null=True)
 
-    dob = models.DateField(verbose_name="date of birth", editable=False, null=True)
+    dob = models.DateField(verbose_name="date of birth", null=True)
 
     phone = PhoneNumberField(region="IN", null=True)
 
@@ -86,3 +82,6 @@ class Profile(models.Model):
 
     def __str__(self):
         return f"{self.user}'s Profile"
+
+
+    

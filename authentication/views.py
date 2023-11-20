@@ -129,16 +129,15 @@ class UserProfileApi(APIView):
         data = {"userprofile": profile_serializer.data}
         return Response(data=data, status=status.HTTP_200_OK)
 
-    @extend_schema(responses=CustomUserSerializer)
+    @extend_schema(responses=ProfileSerializer)
     def put(self, request):
         request_user = request.user.profile
         profile_serializer = ProfileSerializer(
             request_user, data=request.data, partial=True
         )
-
+    
         if profile_serializer.is_valid():
             profile_serializer.save()
-
             return Response(
                 {
                     "profile data": profile_serializer.data,
