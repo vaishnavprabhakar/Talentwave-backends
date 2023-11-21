@@ -7,11 +7,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 
 
 class User(AbstractBaseUser):
-    username = models.CharField(
-        max_length=100,
-        unique=True,
-        blank=True
-    )
+    username = models.CharField(max_length=100, unique=True, blank=True)
     email = models.EmailField(
         max_length=154,
         unique=True,
@@ -36,8 +32,6 @@ class User(AbstractBaseUser):
     def is_staff(self):
         return self.is_admin
 
-    
-
     # Simplest possible answer: True, always
     def has_perm(self, perm, obj=None):
         return True
@@ -58,7 +52,10 @@ class User(AbstractBaseUser):
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
-    first_name = models.CharField(max_length=120,null=True,)
+    first_name = models.CharField(
+        max_length=120,
+        null=True,
+    )
 
     last_name = models.CharField(max_length=120, null=True)
 
@@ -78,10 +75,21 @@ class Profile(models.Model):
 
     updated_at = models.DateTimeField(auto_now=True, null=True)
 
-    resume = models.FileField(blank=True, default=None)
+    resume = models.FileField(upload_to='resumes',blank=True, default=None)
 
     def __str__(self):
         return f"{self.user}'s Profile"
-
+    
 
     
+
+
+class RecruiterProfile(models.Model):
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    company_name = models.CharField(verbose_name='Company', max_length=150)
+    position = models.CharField(max_length=150)
+
+
+    def __str__(self):
+        return f"{self.user}'s {1}"

@@ -1,6 +1,6 @@
 import random
 from django.conf import settings
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMessage
 from rest_framework.views import APIView
 from authentication.models import User, Profile
 from authentication.serializer import (
@@ -8,7 +8,6 @@ from authentication.serializer import (
     LogUserSerializer,
     ProfileSerializer,
 )
-from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework import status
 from drf_spectacular.utils import extend_schema
@@ -31,18 +30,16 @@ class UserRegisterApi(APIView):
         otp = random.randint(100000, 999999)
         request.session["saved_otp"] = otp
         if serializer.is_valid():
-            
             get_username = serializer.data.get("username")
-          
             request.session["user_username"] = get_username
-            
-            # send_mail(
-            #     "Account verify",
-            #     "Please verify your account",
-            #     settings.EMAIL_USER,
-            #     [get_email],
-            #     html_message=f"<b>Your Otp for verification is : {otp}</b>",
-            # )
+            msg = EmailMessage(
+                subject="Verify your Talentwave account",
+                body=f"<b>Your Otp for verification is : {otp}</b>",
+                from_email=settings.EMAIL_USER,
+                to=[get_username.get('email')],
+                reply_to=[settings.EMAIL_REPLY]
+            )
+            msg.send(fail_silently=True)
             return Response(
                 {"otp": otp},
                 status=status.HTTP_200_OK,
@@ -56,30 +53,28 @@ class UserRegisterApi(APIView):
 # Verification of One Time Password and saving user data.
 class VerifyOtp(APIView):
 
-   
-    def post(self, request):
-    
-        get_data = request.session.get("user_username")
 
+    def post(self, request):
+        get_data = request.session.get("user_username")
         generated_otp = request.session.get("saved_otp")
         entered_otp = request.data.get("entered_otp")
-       
         try:
-            user= User.objects.get(email=get_data['email'])            
-           
-        except User.DoesNotExist as e:
-          
+            user = User.objects.get(email=get_data["email"])
+        except User.DoesNotExist:
             if int(generated_otp) == int(entered_otp):
                 user = User.objects.create_user(
-                    email=get_data['email'],
-                    username=get_data['username'],
-                    password=get_data['password'],
-                    account_type=get_data['account_type'],
+                    email=get_data["email"],
+                    username=get_data["username"],
+                    password=get_data["password"],
+                    account_type=get_data["account_type"],
                 )
-              
+
                 tokens = get_tokens_for_user(user=user)
-                return Response({"msg" : "successful", "token" : tokens}, status=status.HTTP_201_CREATED)
-        
+                return Response(
+                    {"msg": "successful", "token": tokens},
+                    status=status.HTTP_201_CREATED,
+                )
+
         return Response(
             {"error": "Otp doesn't match"}, status=status.HTTP_429_TOO_MANY_REQUESTS
         )
@@ -119,7 +114,7 @@ class UserProfileApi(APIView):
         request_user = request.user
         try:
             user_profile = request_user.profile
-      
+
         except Profile.DoesNotExist:
             return Response(
                 {"info": "No profile match found."}, status=status.HTTP_204_NO_CONTENT
@@ -135,7 +130,7 @@ class UserProfileApi(APIView):
         profile_serializer = ProfileSerializer(
             request_user, data=request.data, partial=True
         )
-    
+
         if profile_serializer.is_valid():
             profile_serializer.save()
             return Response(

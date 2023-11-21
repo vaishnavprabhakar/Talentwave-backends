@@ -146,7 +146,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
-
 }
 
 
@@ -180,3 +179,4 @@ EMAIL_PORT = 587
 EMAIL_USER = config("APP_ID")
 EMAIL_PASSWORD = config("APP_PASSWD")
 EMAIL_USE_TLS = True
+EMAIL_REPLY = config("EMAIL_REPLY")

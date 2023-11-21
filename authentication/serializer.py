@@ -1,6 +1,7 @@
 from rest_framework import serializers
-from rest_framework.fields import empty
+from django.contrib.auth.password_validation import validate_password
 from authentication.models import Profile, User
+from rest_framework.validators import ValidationError
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
@@ -23,30 +24,35 @@ class CustomUserSerializer(serializers.ModelSerializer):
                 "write_only": True
             },  # to hide the password field in GET requests
         }
-    
-   
+
+    def validate(self, data):
+        value = data
+        password = value.get('password')
+        confirm_password = value.get('confirm_password')
+        try:
+            validate_password(password)
+        except ValidationError as e:
+            raise serializers.ValidationError(e.messages)
+        
+        if password != confirm_password:
+            raise serializers.ValidationError("Passwords doesn't match...")
+        return data
+
 
     def get_username(self, obj):
-        email = obj.get('email', '')  
-        get_username = email.split('@')[0] 
-        username = self.create(obj,get_username)
+        email = obj.get("email", "")
+        get_username = email.split("@")[0]
+        username = self.create(obj, get_username)
         return username
-    
 
-    def create(self, validated_data,username):
-        validated_data['username']=username
+    def create(self, validated_data, username):
+        validated_data["username"] = username
         return validated_data
-    
-    
+
 
 class LogUserSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(style={"input_type": "password"})
-
-    
-
-
-
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -62,16 +68,9 @@ class ProfileSerializer(serializers.ModelSerializer):
             "dob",
             "phone",
             "city",
-            
         )
 
-    def validate(self, data):
-        print(data)
-        return data
-    
-
     def update(self, instance, validated_data):
-    
         instance.first_name = validated_data.get("first_name", instance.first_name)
         instance.last_name = validated_data.get("last_name", instance.last_name)
         instance.profile_image = validated_data.get(
@@ -93,14 +92,13 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.Serializer):
-
     profile = ProfileSerializer()
 
     class Meta:
         model = User
         fields = ("username", "profile")
-    
 
     def update(self, instance, validated_data):
         instance.username = validated_data.get("username", instance.username)
         return instance
+
