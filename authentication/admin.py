@@ -1,4 +1,3 @@
-from asyncio import format_helpers
 from django.contrib import admin
 from authentication.models import User, Profile, RecruiterProfile, Post
 
