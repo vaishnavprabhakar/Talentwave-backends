@@ -1,3 +1,4 @@
+from datetime import date
 from django.db import models
 from authentication.managers import CustomBaseUserManager
 from django.contrib.auth.models import AbstractBaseUser
@@ -82,6 +83,12 @@ class Profile(models.Model):
         return f"{self.user}'s Profile"
     
 
+    @property
+    def get_age(self):
+        if self.dob:
+            today = date.today()
+            return today.year - self.dob.year - ((today.month, today.day) < (self.dob.month, self.dob.day))
+        return None
 
 
 
