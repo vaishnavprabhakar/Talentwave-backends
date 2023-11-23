@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # Django apps
     "authentication",
+    "post",
     # Libraries
     "phonenumbers",
     "rest_framework",

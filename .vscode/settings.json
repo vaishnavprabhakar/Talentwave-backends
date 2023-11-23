@@ -1,0 +1,6 @@
+{
+    "editor.suggest.selectionMode": "whenTriggerCharacter",
+    "workbench.commandPalette.experimental.suggestCommands": true,
+    "emmet.useInlineCompletions": false,
+    "editor.inlineSuggest.suppressSuggestions": false
+}
