@@ -50,7 +50,6 @@ class User(AbstractBaseUser):
     REQUIRED_FIELDS = ("username",)
 
 
-
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
@@ -101,10 +100,3 @@ class RecruiterProfile(models.Model):
 
     def __str__(self):
         return f"{self.user}"
-    
-
-
-class Post(models.Model):
-
-    user = models.ForeignKey('authentication.User', on_delete=models.CASCADE)
-    
