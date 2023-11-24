@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from authentication.models import Profile, User
 from rest_framework.validators import ValidationError
+from post.serializer import PostListSerializer
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
@@ -93,10 +94,10 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.Serializer):
     profile = ProfileSerializer()
-
+    posts = PostListSerializer()
     class Meta:
         model = User
-        fields = ("username", "profile")
+        fields = ("username", "profile", "posts")
 
     def update(self, instance, validated_data):
         instance.username = validated_data.get("username", instance.username)
