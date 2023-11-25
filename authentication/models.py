@@ -76,27 +76,27 @@ class Profile(models.Model):
 
     updated_at = models.DateTimeField(auto_now=True, null=True)
 
-    resume = models.FileField(upload_to='resumes',blank=True, default=None)
+    resume = models.FileField(upload_to="resumes", blank=True, default=None)
 
     def __str__(self):
         return f"{self.user}'s Profile"
-    
 
     @property
     def get_age(self):
         if self.dob:
             today = date.today()
-            return today.year - self.dob.year - ((today.month, today.day) < (self.dob.month, self.dob.day))
+            return (
+                today.year
+                - self.dob.year
+                - ((today.month, today.day) < (self.dob.month, self.dob.day))
+            )
         return None
 
 
-
 class RecruiterProfile(models.Model):
-
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    company_name = models.CharField(verbose_name='Company', max_length=150)
+    company_name = models.CharField(verbose_name="Company", max_length=150)
     position = models.CharField(max_length=150)
-
 
     def __str__(self):
         return f"{self.user}"

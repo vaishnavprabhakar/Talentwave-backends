@@ -1,6 +1,6 @@
 import random
 from django.conf import settings
-from django.core.mail import send_mail, EmailMessage
+from django.core.mail import EmailMessage
 from rest_framework.views import APIView
 from authentication.models import User, Profile
 from authentication.serializer import (
@@ -22,7 +22,8 @@ from authentication.auth.auth_tokens import get_tokens_for_user
 
 
 class UserRegisterApi(APIView):
-    renderer_classes = [JSONRenderer]
+    def get(self, request):
+        return Response("ok")
 
     @extend_schema(responses=CustomUserSerializer)
     def post(self, request):
@@ -35,11 +36,11 @@ class UserRegisterApi(APIView):
             msg = EmailMessage(
                 subject="Verify your Talentwave account",
                 body=f"<b>Your Otp for verification is : {otp}</b>",
-                from_email=settings.EMAIL_USER,
-                to=[get_username.get('email')],
-                reply_to=[settings.EMAIL_REPLY]
+                from_email=settings.EMAIL_HOST_USER,
+                to=[get_username.get("email")],
+                reply_to=[settings.EMAIL_REPLY],
             )
-            msg.send(fail_silently=True)
+            msg.send()
             return Response(
                 {"otp": otp},
                 status=status.HTTP_200_OK,
@@ -52,8 +53,6 @@ class UserRegisterApi(APIView):
 
 # Verification of One Time Password and saving user data.
 class VerifyOtp(APIView):
-
-
     def post(self, request):
         get_data = request.session.get("user_username")
         generated_otp = request.session.get("saved_otp")
@@ -145,5 +144,3 @@ class UserProfileApi(APIView):
             },
             status=status.HTTP_400_BAD_REQUEST,
         )
-
-

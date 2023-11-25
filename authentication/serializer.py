@@ -28,17 +28,16 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         value = data
-        password = value.get('password')
-        confirm_password = value.get('confirm_password')
+        password = value.get("password")
+        confirm_password = value.get("confirm_password")
         try:
             validate_password(password)
         except ValidationError as e:
             raise serializers.ValidationError(e.messages)
-        
+
         if password != confirm_password:
             raise serializers.ValidationError("Passwords doesn't match...")
         return data
-
 
     def get_username(self, obj):
         email = obj.get("email", "")
@@ -57,7 +56,6 @@ class LogUserSerializer(serializers.Serializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Profile
         fields = (
@@ -95,6 +93,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.Serializer):
     profile = ProfileSerializer()
     posts = PostListSerializer()
+
     class Meta:
         model = User
         fields = ("username", "profile", "posts")
@@ -102,4 +101,3 @@ class UserSerializer(serializers.Serializer):
     def update(self, instance, validated_data):
         instance.username = validated_data.get("username", instance.username)
         return instance
-
