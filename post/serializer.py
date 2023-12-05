@@ -50,6 +50,7 @@ class PostCreateSerializer(serializers.ModelSerializer):
 
 
 class PostListSerializer(serializers.ModelSerializer):
+    
     class Meta:
         model = Post
         fields = "__all__"

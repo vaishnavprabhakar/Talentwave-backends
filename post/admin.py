@@ -17,3 +17,5 @@ class PostAdmin(admin.ModelAdmin):
     )
 
     list_display_links = ("description", "type")
+
+    ordering = '-created_at',

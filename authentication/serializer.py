@@ -21,7 +21,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
             "account_type",
         )
         extra_kwargs = {
-            "password": {
+            "confirm_password": {
                 "write_only": True
             },  # to hide the password field in GET requests
         }
