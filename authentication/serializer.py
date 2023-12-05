@@ -24,7 +24,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
             "account_type",
         )
         extra_kwargs = {
-            "password": {
+            "confirm_password": {
                 "write_only": True
             },  # to hide the password field in GET requests
         }
@@ -96,6 +96,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             user_data.email = validated_user.get("email", user_data.email)
             user_data.save()
         instance.save()
+        
         return instance
 
 

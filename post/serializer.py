@@ -45,6 +45,7 @@ class PostCreateSerializer(serializers.ModelSerializer):
 
 
 class PostListSerializer(serializers.ModelSerializer):
+    
     class Meta:
         model = Post
         fields = ("type", "image", "title", "description")
