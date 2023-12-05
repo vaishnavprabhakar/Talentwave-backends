@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from .models import Post, Like
-from rest_framework.response import Response
 
 class PostCreateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -56,7 +55,7 @@ class LikeCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Like
-        fields = '__all__'
+        fields = '__all__',
 
     
     def update(self, instance, validated_data):
