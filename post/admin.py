@@ -1,5 +1,5 @@
 from django.contrib import admin
-from post.models import Post
+from post.models import Post, Like
 
 # Register your models here.
 
@@ -20,3 +20,8 @@ class PostAdmin(admin.ModelAdmin):
     list_display_links = ("description", "type")
 
     ordering = '-created_at',
+
+@admin.register(Like)
+class LikeAdmin(admin.ModelAdmin):
+
+    list_display = "post",

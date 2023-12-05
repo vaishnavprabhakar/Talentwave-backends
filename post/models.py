@@ -21,3 +21,12 @@ class Post(models.Model):
 
     def __str__(self):
         return f"This Post created by {self.created_by}"
+    
+
+class Like(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="post")
+    like = models.ManyToManyField(User, related_name="likes", )
+
+
+    def __str__(self):
+        return f"{self.post}"

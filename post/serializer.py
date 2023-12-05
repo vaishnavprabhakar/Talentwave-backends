@@ -1,7 +1,6 @@
 from rest_framework import serializers
-from rest_framework.fields import empty
-from .models import Post
-
+from .models import Post, Like
+from rest_framework.response import Response
 
 class PostCreateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -49,3 +48,22 @@ class PostListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = ("type", "image", "title", "description")
+
+
+# Like serializer
+
+class LikeCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Like
+        fields = '__all__'
+
+    
+    def update(self, instance, validated_data):
+        print(self.context)
+        liked_by_user = Like.objects.filter(like=self.context.get('request').user)
+        if liked_by_user.exists():
+            liked_by_user.remove()
+        liked_by_user.add(self.context.get('request').user)
+        return instance
+    
