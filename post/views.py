@@ -17,7 +17,7 @@ class PostCreateApiView(APIView):
     authentication_classes = [JWTAuthentication]
     @swagger_auto_schema(operation_summary='Get all Post',)
     def get(self, request):
-        user_posts = Post.objects.filter(user=request.user)
+        user_posts = Post.objects.filter(created_by=request.user)
         serializer = PostListSerializer(data=user_posts, many=True)
         serializer.is_valid()
         return Response({"data": serializer.data}, status=200)

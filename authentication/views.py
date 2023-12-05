@@ -123,15 +123,17 @@ class UserProfileApi(APIView):
     @swagger_auto_schema(operation_summary='Profile create')
     def get(self, request):
         request_user = request.user
-
+        print(request_user.profile)
+        
         try:
             request_user.profile
+        
         except Profile.DoesNotExist:
             return Response(
                 {"info": "No profile match found."}, status=status.HTTP_204_NO_CONTENT
             )
         
-        user_serializer = UserSerializer(request_user)
+        user_serializer = UserSerializer(data=request_user)
         data = {"user_data": user_serializer.data}
         return Response(data=data, status=status.HTTP_200_OK)
 

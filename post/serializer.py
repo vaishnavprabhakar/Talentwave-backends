@@ -10,7 +10,7 @@ class PostCreateSerializer(serializers.ModelSerializer):
    
     def create(self, validated_data):
         user = self.context['request'].user
-        validated_data['user'] = user  
+        validated_data['created_by'] = user  
         post = super().create(validated_data)
         return post
     
@@ -66,4 +66,3 @@ class LikeCreateSerializer(serializers.ModelSerializer):
             liked_by_user.remove()
         liked_by_user.add(self.context.get('request').user)
         return instance
-    

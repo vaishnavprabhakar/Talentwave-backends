@@ -14,7 +14,7 @@ class Post(models.Model):
     image = models.ImageField(upload_to="post/", blank=True)
     title = models.CharField(max_length=256, null=True)
     description = models.TextField()
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts',)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')
     created_at = models.DateTimeField(auto_now_add=True, null=True)
     updated_at = models.DateTimeField(auto_now=True, null=True)
     like = models.ManyToManyField(User, )
