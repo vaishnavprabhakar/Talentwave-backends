@@ -87,6 +87,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             user_data.email = validated_user.get("email", user_data.email)
             user_data.save()
         instance.save()
+        
         return instance
 
 
