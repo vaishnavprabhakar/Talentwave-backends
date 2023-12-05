@@ -81,6 +81,7 @@ class Profile(models.Model):
     def __str__(self):
         return f"{self.user}'s Profile"
 
+
     @property
     def get_age(self):
         if self.dob:
