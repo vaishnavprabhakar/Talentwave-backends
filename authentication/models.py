@@ -1,3 +1,4 @@
+from datetime import date
 from django.db import models
 from authentication.managers import CustomBaseUserManager
 from django.contrib.auth.models import AbstractBaseUser
@@ -67,7 +68,7 @@ class Profile(models.Model):
 
     dob = models.DateField(verbose_name="date of birth", null=True)
 
-    phone = PhoneNumberField(region="IN", null=True)
+    phone = PhoneNumberField(region="IN", null=True,unique=True)
 
     city = models.CharField(max_length=200, null=True)
 
@@ -75,22 +76,28 @@ class Profile(models.Model):
 
     updated_at = models.DateTimeField(auto_now=True, null=True)
 
-    resume = models.FileField(upload_to='resumes',blank=True, default=None)
+    resume = models.FileField(upload_to="resumes", blank=True, default=None)
 
     def __str__(self):
         return f"{self.user}'s Profile"
-    
-    
 
-    
+
+    @property
+    def get_age(self):
+        if self.dob:
+            today = date.today()
+            return (
+                today.year
+                - self.dob.year
+                - ((today.month, today.day) < (self.dob.month, self.dob.day))
+            )
+        return None
 
 
 class RecruiterProfile(models.Model):
-
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    company_name = models.CharField(verbose_name='Company', max_length=150)
+    company_name = models.CharField(verbose_name="Company", max_length=150)
     position = models.CharField(max_length=150)
 
-
     def __str__(self):
-        return f"{self.user}'s {1}"
+        return f"{self.user}"
