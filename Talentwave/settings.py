@@ -15,7 +15,7 @@ from pathlib import Path
 import os
 
 from decouple import Csv, config
-from django.conf import settings
+
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -47,21 +47,30 @@ INSTALLED_APPS = [
     "authentication",
     "post",
     # Libraries
+    "drf_yasg",
     "phonenumbers",
     "rest_framework",
     "rest_framework_simplejwt",
-    "drf_spectacular",
+    "oauth2_provider",
+    "allauth",
+    "allauth.socialaccount",
+    'allauth.socialaccount.providers.github',
+    'allauth.socialaccount.providers.google',
 ]
 
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "oauth2_provider.middleware.OAuth2TokenMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "social_django.middleware.SocialAuthExceptionMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
+
 ]
 
 ROOT_URLCONF = "Talentwave.urls"
@@ -77,10 +86,35 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "social_django.context_processors.backends",
             ],
         },
     },
 ]
+
+
+TEMPLATE_CONTEXT_PROCESSORS = (
+
+    "django.core.context_processors.request",
+    "allauth.account.context_processors.account",
+    "allauth.socialaccount.context_processors.socialaccount",
+
+)
+
+AUTHENTICATION_BACKENDS = (
+    
+    # Needed to login by username in Django admin, regardless of `allauth`
+    "django.contrib.auth.backends.ModelBackend",
+
+    # `allauth` specific authentication methods, such as login by e-mail
+    "allauth.account.auth_backends.AuthenticationBackend",
+
+)
+
+# Provider specific settings
+
+
+
 
 WSGI_APPLICATION = "Talentwave.wsgi.application"
 
@@ -146,7 +180,11 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 REST_FRAMEWORK = {
-    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    # "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+        'DEFAULT_AUTHENTICATION_CLASSES': (
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+        'rest_framework.authentication.SessionAuthentication', # To keep the Browsable API
+    ),
 }
 
 
@@ -181,3 +219,57 @@ EMAIL_HOST_USER = config("APP_ID")
 EMAIL_HOST_PASSWORD = config("APP_PASSWD")
 EMAIL_USE_TLS = True
 EMAIL_REPLY = config("EMAIL_REPLY")
+
+
+
+# social custom authentication settings
+
+AUTHENTICATION_BACKENDS = [
+    "social_core.backends.google.GoogleOAuth2",
+    "django.contrib.auth.backends.ModelBackend",
+    "oauth2_provider.backends.OAuth2Backend",
+]
+
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'home'
+LOGOUT_URL = 'logout'
+LOGOUT_REDIRECT_URL = 'login'
+
+SOCIAL_AUTH_GOOGLE_OAUTH_KEY = config('GOOGLE_CLIENT_ID')
+SOCIAL_AUTH_GOOGLE_OAUTH_SECRET = config('GOOGLE_CLIENT_SECRET')
+
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        # For each OAuth based provider, either add a ``SocialApp``
+        # (``socialaccount`` app) containing the required client
+        # credentials, or list them here:
+        'APP': {
+            'client_id': SOCIAL_AUTH_GOOGLE_OAUTH_KEY,
+            'secret': SOCIAL_AUTH_GOOGLE_OAUTH_SECRET,
+            'key': ''
+        }
+    }
+}
+
+
+SWAGGER_SETTINGS = {
+    "DEFAULT_INFO": {
+        "title": "Talent Wave",
+        "description": "API documentation for Talent Wave",
+        "version": "1.0",
+        "contact": {
+            "name": "Vaishnav Prabhakar",
+            "url": "http://talentwave.org",
+            "email": "vaishnavprabhakarkoo@gmail.com",
+        },
+    },
+    "SERVE_INCLUDE_SCHEMA":True,
+    "SECURITY_DEFINITIONS": {
+        'Bearer': {
+            'in': 'header',
+            'name': 'Authorization',
+            'type': 'apiKey',
+        },
+    }
+}

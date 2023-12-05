@@ -68,7 +68,7 @@ class Profile(models.Model):
 
     dob = models.DateField(verbose_name="date of birth", null=True)
 
-    phone = PhoneNumberField(region="IN", null=True)
+    phone = PhoneNumberField(region="IN", null=True,unique=True)
 
     city = models.CharField(max_length=200, null=True)
 

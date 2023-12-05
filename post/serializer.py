@@ -28,7 +28,6 @@ class PostCreateSerializer(serializers.ModelSerializer):
         return instance
 
     def validate(self, attrs):
-        print(attrs, ">>>>> attrs <<<<<<")
         type = attrs.get("type")
         title = attrs.get("title")
         description = attrs.get("description")
