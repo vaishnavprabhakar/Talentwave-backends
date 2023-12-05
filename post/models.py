@@ -17,7 +17,6 @@ class Post(models.Model):
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')
     created_at = models.DateTimeField(auto_now_add=True, null=True)
     updated_at = models.DateTimeField(auto_now=True, null=True)
-    like = models.ManyToManyField(User, )
 
     def __str__(self):
         return f"This Post created by {self.created_by}"
