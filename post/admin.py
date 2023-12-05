@@ -10,6 +10,7 @@ class PostAdmin(admin.ModelAdmin):
         "id",
         "type",
         "image",
+        "created_by",
         "description",
         "title",
         "created_at",

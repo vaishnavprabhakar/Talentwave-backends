@@ -88,9 +88,7 @@ class Profile(models.Model):
         if self.dob:
             today = date.today()
             return (
-                today.year
-                - self.dob.year
-                - ((today.month, today.day) < (self.dob.month, self.dob.day))
+                today.year - self.dob.year - ((today.month, today.day) < (self.dob.month, self.dob.day))
             )
         return None
 

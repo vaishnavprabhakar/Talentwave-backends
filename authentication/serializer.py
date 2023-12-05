@@ -1,8 +1,11 @@
+import re
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from authentication.models import Profile, User
 from rest_framework.validators import ValidationError
 from post.serializer import PostListSerializer
+
+
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
@@ -28,16 +31,22 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         value = data
+        pattern = re.compile(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$')
         password = value.get("password")
         confirm_password = value.get("confirm_password")
+        if not pattern or not re.search(r'\d', password):
+            raise serializers.ValidationError(
+                "Password must contain at least one uppercase letter atleast one special charector and one digit."
+            )
+        
         try:
             validate_password(password)
         except ValidationError as e:
             raise serializers.ValidationError(e.messages)
-
         if password != confirm_password:
             raise serializers.ValidationError("Passwords doesn't match...")
         return data
+
 
     def get_username(self, obj):
         email = obj.get("email", "")

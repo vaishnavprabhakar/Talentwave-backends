@@ -257,10 +257,10 @@ SWAGGER_SETTINGS = {
     "DEFAULT_INFO": {
         "title": "Talent Wave",
         "description": "API documentation for Talent Wave",
-        "version": "1.0",
+        "version": "1.0v",
         "contact": {
-            "name": "Vaishnav Prabhakar",
-            "url": "http://talentwave.org",
+            "name": "Job portal",
+            "url": "https://talentwave.org",
             "email": "vaishnavprabhakarkoo@gmail.com",
         },
     },
