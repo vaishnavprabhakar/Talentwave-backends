@@ -1,4 +1,4 @@
-from .serializer import PostCreateSerializer, PostListSerializer
+from .serializer import PostCreateSerializer, PostListSerializer, LikeCreateSerializer
 from .models import Post
 from authentication.models import User
 from rest_framework.response import Response
@@ -47,3 +47,22 @@ class PostCreateApiView(APIView):
         post_serializer.is_valid(raise_exception=True)
         post_serializer.save()
         return Response({"data": post_serializer.data}, status=status.HTTP_200_OK)
+
+
+
+
+class PostLikeView(APIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    
+    @swagger_auto_schema(operation_summary="Like the post.",request_body=LikeCreateSerializer)
+    def put(self, request):
+        serializer = LikeCreateSerializer(data=request.data)
+        serializer.is_valid()
+        serializer.save()
+        return Response({
+            "msg" : serializer.data
+        }, status=status.HTTP_200_OK)
+    
+
