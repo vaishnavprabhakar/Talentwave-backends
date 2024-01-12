@@ -10,11 +10,16 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import os
 from datetime import timedelta
 from pathlib import Path
-import os
+from drf_yasg import openapi
 
 from decouple import Csv, config
+import cloudinary
+
+
+
 
 
 
@@ -46,16 +51,22 @@ INSTALLED_APPS = [
     # Django apps
     "authentication",
     "post",
+    "company",
     # Libraries
     "drf_yasg",
-    "phonenumbers",
+    "cloudinary",
+    "cloudinary_storage",
+    "debug_toolbar",
     "rest_framework",
     "rest_framework_simplejwt",
+    "phonenumbers",
     "oauth2_provider",
+    "social_django",
+    "drf_social_oauth2",
     "allauth",
     "allauth.socialaccount",
-    'allauth.socialaccount.providers.github',
-    'allauth.socialaccount.providers.google',
+    "allauth.socialaccount.providers.github",
+    "allauth.socialaccount.providers.google",
 ]
 
 
@@ -68,9 +79,9 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
     "social_django.middleware.SocialAuthExceptionMiddleware",
     "allauth.account.middleware.AccountMiddleware",
-
 ]
 
 ROOT_URLCONF = "Talentwave.urls"
@@ -87,6 +98,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "social_django.context_processors.backends",
+                "social_django.context_processors.login_redirect",
             ],
         },
     },
@@ -94,27 +106,24 @@ TEMPLATES = [
 
 
 TEMPLATE_CONTEXT_PROCESSORS = (
-
     "django.core.context_processors.request",
     "allauth.account.context_processors.account",
     "allauth.socialaccount.context_processors.socialaccount",
-
 )
 
 AUTHENTICATION_BACKENDS = (
-    
-    # Needed to login by username in Django admin, regardless of `allauth`
+    # Needed to login by username in Django admin, regardless of `allauth` 'Oauth2'
     "django.contrib.auth.backends.ModelBackend",
-
-    # `allauth` specific authentication methods, such as login by e-mail
+    # `oauth2` specific authentication methods, such as login by e-mail
+    "social_core.backends.google.GoogleOAuth2",
     "allauth.account.auth_backends.AuthenticationBackend",
-
 )
 
 # Provider specific settings
-
-
-
+SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = (
+    "https://www.googleapis.com/auth/userinfo.email",
+    "https://www.googleapis.com/auth/userinfo.profile",
+)
 
 WSGI_APPLICATION = "Talentwave.wsgi.application"
 
@@ -179,25 +188,53 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
+INTERNAL_IPS = [
+    "127.0.0.1:7000",
+]
+
+DEBUG_TOOLBAR_PANELS = [
+    "debug_toolbar.panels.history.HistoryPanel",
+    "debug_toolbar.panels.versions.VersionsPanel",
+    "debug_toolbar.panels.timer.TimerPanel",
+    "debug_toolbar.panels.settings.SettingsPanel",
+    "debug_toolbar.panels.headers.HeadersPanel",
+    "debug_toolbar.panels.request.RequestPanel",
+    "debug_toolbar.panels.sql.SQLPanel",
+    "debug_toolbar.panels.staticfiles.StaticFilesPanel",
+    "debug_toolbar.panels.templates.TemplatesPanel",
+    "debug_toolbar.panels.cache.CachePanel",
+    "debug_toolbar.panels.signals.SignalsPanel",
+    "debug_toolbar.panels.redirects.RedirectsPanel",
+    "debug_toolbar.panels.profiling.ProfilingPanel",
+]
+
+
 REST_FRAMEWORK = {
-    # "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
-        'DEFAULT_AUTHENTICATION_CLASSES': (
-        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
-        'rest_framework.authentication.SessionAuthentication', # To keep the Browsable API
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        # 'drf_social_oauth2.backends.DjangoOAuth2',
+        "oauth2_provider.contrib.rest_framework.OAuth2Authentication",  # django-oauth-toolkit >= 1.0.0
+        # 'drf_social_oauth2.authentication.SocialAuthentication',
+        "rest_framework.authentication.SessionAuthentication",
     ),
+    "DEFAULT_THROTTLE_CLASSES": [
+        # "post.throttling.OnePostPerDay",
+        # "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        # "one_post_per_day": "1/day",  # Adjust the rate limit as needed
+        # Set a default rate for other authenticated users
+    },
 }
 
 
-SPECTACULAR_SETTINGS = {"TITLE": "TALENT WAVE"}
-
-
-MEDIA_ROOT = os.path.join(BASE_DIR / "media")
-MEDIA_URL = "/media/"
+# MEDIA_ROOT = os.path.join(BASE_DIR / "media")
+# MEDIA_URL = "/media/"
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=10),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=10),
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": False,
     "UPDATE_LAST_LOGIN": False,
@@ -221,33 +258,32 @@ EMAIL_USE_TLS = True
 EMAIL_REPLY = config("EMAIL_REPLY")
 
 
-
 # social custom authentication settings
-
-AUTHENTICATION_BACKENDS = [
+AUTHENTICATION_BACKENDS = (
     "social_core.backends.google.GoogleOAuth2",
     "django.contrib.auth.backends.ModelBackend",
     "oauth2_provider.backends.OAuth2Backend",
-]
+    # 'drf_social_oauth2.backends.DjangoOAuth2',
+)
 
-LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = 'home'
-LOGOUT_URL = 'logout'
-LOGOUT_REDIRECT_URL = 'login'
+LOGIN_URL = "login"
+LOGIN_REDIRECT_URL = "home"
+LOGOUT_URL = "logout"
+LOGOUT_REDIRECT_URL = "login"
 
-SOCIAL_AUTH_GOOGLE_OAUTH_KEY = config('GOOGLE_CLIENT_ID')
-SOCIAL_AUTH_GOOGLE_OAUTH_SECRET = config('GOOGLE_CLIENT_SECRET')
+SOCIAL_AUTH_GOOGLE_OAUTH_KEY = config("GOOGLE_CLIENT_ID")
+SOCIAL_AUTH_GOOGLE_OAUTH_SECRET = config("GOOGLE_CLIENT_SECRET")
 
 
 SOCIALACCOUNT_PROVIDERS = {
-    'google': {
+    "google": {
         # For each OAuth based provider, either add a ``SocialApp``
         # (``socialaccount`` app) containing the required client
         # credentials, or list them here:
-        'APP': {
-            'client_id': SOCIAL_AUTH_GOOGLE_OAUTH_KEY,
-            'secret': SOCIAL_AUTH_GOOGLE_OAUTH_SECRET,
-            'key': ''
+        "APP": {
+            "client_id": SOCIAL_AUTH_GOOGLE_OAUTH_KEY,
+            "secret": SOCIAL_AUTH_GOOGLE_OAUTH_SECRET,
+            "key": "",
         }
     }
 }
@@ -264,12 +300,34 @@ SWAGGER_SETTINGS = {
             "email": "vaishnavprabhakarkoo@gmail.com",
         },
     },
-    "SERVE_INCLUDE_SCHEMA":True,
+    # "DEFAULT_"
+    "SERVE_INCLUDE_SCHEMA": True,
     "SECURITY_DEFINITIONS": {
-        'Bearer': {
-            'in': 'header',
-            'name': 'Authorization',
-            'type': 'apiKey',
+        "Bearer": {
+            "in": "header",
+            "name": "Authorization",
+            "type": "apiKey",
         },
-    }
+    },
+}
+
+
+AI_SECRET_KEY=config('AI_KEY')
+
+
+cloudinary.config( 
+    cloud_name = "darygrbe3", 
+    api_key = config("CLOUDINARY_KEY"),
+    api_secret = config("CLOUDINARY_SECRET"),
+    secure=True
+)
+
+
+CLOUDINARY_STORAGE = {
+
+    'CLOUD_NAME' : "darygrbe3", 
+    'API_KEY' : config("CLOUDINARY_KEY"),
+    'API_SECRET' : config("CLOUDINARY_SECRET"),
+    'secure':True,
+
 }

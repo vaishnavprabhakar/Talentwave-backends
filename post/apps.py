@@ -7,4 +7,3 @@ class PostConfig(AppConfig):
 
     def ready(self) -> None:
         import post.signals
-        

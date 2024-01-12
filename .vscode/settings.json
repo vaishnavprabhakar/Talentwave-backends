@@ -1,0 +1,29 @@
+{
+    "python.analysis.typeCheckingMode": "off",
+    "python.analysis.autoImportCompletions": false,
+    "[python]": {
+        "editor.formatOnType": true,
+        "editor.wordBasedSuggestions": "allDocuments",
+        "breadcrumbs.showClasses": true,
+        "diffEditor.diffAlgorithm": "advanced"
+
+    },
+    "terminal.integrated.defaultProfile.linux": "zsh",
+    "terminal.integrated.cursorBlinking": true,
+    "workbench.colorCustomizations": {
+        "terminal.background":"#000000",
+        "terminal.foreground":"#D9D8D8",
+        "terminalCursor.background":"#d6d3d3",
+        "terminalCursor.foreground":"#eb1c1c",
+        "terminal.ansiBlack":"#16007a",
+    },
+    "python.REPL.enableREPLSmartSend": true,
+    "editor.gotoLocation.alternativeImplementationCommand": "editor.action.goToReferences",
+    "editor.gotoLocation.alternativeReferenceCommand": "editor.action.peekTypeDefinition",
+    "search.searchEditor.doubleClickBehaviour": "openLocationToSide",
+    "python.analysis.gotoDefinitionInStringLiteral": true,
+    "python.languageServer": "Pylance",
+    "editor.quickSuggestionsDelay": 0,
+    "editor.suggest.preview": true,
+    "editor.suggest.selectionMode": "whenTriggerCharacter",
+}

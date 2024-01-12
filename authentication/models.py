@@ -1,5 +1,6 @@
 from datetime import date
 from django.db import models
+from company.models import Job
 from authentication.managers import CustomBaseUserManager
 from django.contrib.auth.models import AbstractBaseUser
 from phonenumber_field.modelfields import PhoneNumberField
@@ -28,6 +29,8 @@ class User(AbstractBaseUser):
     is_active = models.BooleanField(
         default=False,
     )
+
+    
 
     @property
     def is_staff(self):
@@ -60,7 +63,7 @@ class Profile(models.Model):
 
     last_name = models.CharField(max_length=120, null=True)
 
-    profile_image = models.ImageField(upload_to="profile/", null=True, blank=True)
+    profile_image = models.TextField(null=True)
 
     bio = models.TextField(null=True)
 
@@ -68,7 +71,7 @@ class Profile(models.Model):
 
     dob = models.DateField(verbose_name="date of birth", null=True)
 
-    phone = PhoneNumberField(region="IN", null=True,unique=True)
+    phone = PhoneNumberField(region="IN", null=True, unique=True)
 
     city = models.CharField(max_length=200, null=True)
 
@@ -76,27 +79,46 @@ class Profile(models.Model):
 
     updated_at = models.DateTimeField(auto_now=True, null=True)
 
-    resume = models.FileField(upload_to="resumes", blank=True, default=None)
+    resume = models.FileField(upload_to="resumes/", blank=True, default=None)
 
     def __str__(self):
         return f"{self.user}'s Profile"
-    
-    
 
     @property
     def get_age(self):
         if self.dob:
             today = date.today()
             return (
-                today.year - self.dob.year - ((today.month, today.day) < (self.dob.month, self.dob.day))
+                today.year
+                - self.dob.year
+                - ((today.month, today.day) < (self.dob.month, self.dob.day))
             )
         return None
 
 
 class RecruiterProfile(models.Model):
+    POSITION_CHOICE = (
+        ("HR", "HUMAN RESOURCE"),
+        ("Recruiter", "RECRUITER"),
+    )
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    company_name = models.CharField(verbose_name="Company", max_length=150)
-    position = models.CharField(max_length=150)
+    company_name = models.CharField(max_length=256)
+    position = models.CharField(max_length=150, choices=POSITION_CHOICE)
+    proffessional_card = models.FileField(upload_to='proffessional_cards/',serialize=True, unique=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True, editable=False)
 
     def __str__(self):
         return f"{self.user}"
+
+
+
+# TODO : Related to this model.
+    
+class Follow(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    following = models.ManyToManyField(User, related_name="following")
+    follower = models.ManyToManyField(User, related_name="follower")
+
+    def __str__(self):
+        return f"{self.user}'s followers"
+

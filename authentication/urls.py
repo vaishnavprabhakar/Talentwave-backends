@@ -1,8 +1,11 @@
 from django.urls import path
-from authentication.views import UserProfileApi, VerifyOtp
+from . import views
 
 
 urlpatterns = [
-    path("profile/", UserProfileApi.as_view(), name="profile"),
-    path("verify_otp/", VerifyOtp.as_view(), name="verifyotp"),
+    path("profile/", views.UserProfileApi.as_view(), name="profile"),
+    path("verify_otp/", views.VerifyOtp.as_view(), name="verifyotp"),
+    path(
+        "re/profile/", views.RecruiterProfileApiView.as_view(), name="recruiter_profile"
+    ),
 ]
