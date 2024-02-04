@@ -11,7 +11,7 @@ class UserAdmin(admin.ModelAdmin):
     )
     readonly_fields = ("password",)
     list_display_links = ("email",)
-    
+
 
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
@@ -22,11 +22,10 @@ class ProfileAdmin(admin.ModelAdmin):
         "profile_image",
         "city",
         "bio",
-        "title"
+        "title",
     )
-    list_display_links = ['first_name','last_name']
+    list_display_links = ["first_name", "last_name"]
 
-    
 
 @admin.register(RecruiterProfile)
 class RecruiterProfile(admin.ModelAdmin):
@@ -36,5 +35,3 @@ class RecruiterProfile(admin.ModelAdmin):
 @admin.register(Follow)
 class FollowAdmin(admin.ModelAdmin):
     list_display = ("id", "user")
-
-

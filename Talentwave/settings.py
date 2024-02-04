@@ -14,13 +14,9 @@ import os
 from datetime import timedelta
 from pathlib import Path
 from drf_yasg import openapi
-
+from django.conf import settings
 from decouple import Csv, config
 import cloudinary
-
-
-
-
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -36,24 +32,16 @@ SECRET_KEY = config("PROJECTSECRET", default="mysecret")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    "django.contrib.admin",
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
-    # Django apps
-    "authentication",
-    "post",
-    "company",
     # Libraries
+    "daphne",
     "drf_yasg",
+    "channels",
     "cloudinary",
     "cloudinary_storage",
     "debug_toolbar",
@@ -66,25 +54,42 @@ INSTALLED_APPS = [
     "allauth",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.github",
-    "allauth.socialaccount.providers.google",
+    "allauth.socialaccount.providers.google",  # end
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    # Django apps
+    "authentication",
+    "post",
+    "company",
+    "chat",
 ]
+
+
+ASGI_APPLICATION = "Talentwave.asgi.application"
+WSGI_APPLICATION = "Talentwave.wsgi.application"
 
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "oauth2_provider.middleware.OAuth2TokenMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
-    "social_django.middleware.SocialAuthExceptionMiddleware",
+    "oauth2_provider.middleware.OAuth2TokenMiddleware",
     "allauth.account.middleware.AccountMiddleware",
+    "social_django.middleware.SocialAuthExceptionMiddleware",
 ]
 
 ROOT_URLCONF = "Talentwave.urls"
+
 
 TEMPLATES = [
     {
@@ -113,10 +118,11 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 
 AUTHENTICATION_BACKENDS = (
     # Needed to login by username in Django admin, regardless of `allauth` 'Oauth2'
+    "rest_framework_simplejwt.backends.TokenBackend",
     "django.contrib.auth.backends.ModelBackend",
     # `oauth2` specific authentication methods, such as login by e-mail
-    "social_core.backends.google.GoogleOAuth2",
-    "allauth.account.auth_backends.AuthenticationBackend",
+    # "social_core.backends.google.GoogleOAuth2",
+    # "allauth.account.auth_backends.AuthenticationBackend",
 )
 
 # Provider specific settings
@@ -124,8 +130,6 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = (
     "https://www.googleapis.com/auth/userinfo.email",
     "https://www.googleapis.com/auth/userinfo.profile",
 )
-
-WSGI_APPLICATION = "Talentwave.wsgi.application"
 
 
 # Database
@@ -192,6 +196,11 @@ INTERNAL_IPS = [
     "127.0.0.1:7000",
 ]
 
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:7000",  # Replace with your frontend URL
+]
+
+
 DEBUG_TOOLBAR_PANELS = [
     "debug_toolbar.panels.history.HistoryPanel",
     "debug_toolbar.panels.versions.VersionsPanel",
@@ -209,8 +218,11 @@ DEBUG_TOOLBAR_PANELS = [
 ]
 
 
+
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTStatelessUserAuthentication",
+        # "rest_framework_simplejwt.tokens.TokenBackend",
         # 'drf_social_oauth2.backends.DjangoOAuth2',
         "oauth2_provider.contrib.rest_framework.OAuth2Authentication",  # django-oauth-toolkit >= 1.0.0
         # 'drf_social_oauth2.authentication.SocialAuthentication',
@@ -229,7 +241,9 @@ REST_FRAMEWORK = {
 
 # MEDIA_ROOT = os.path.join(BASE_DIR / "media")
 # MEDIA_URL = "/media/"
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+
+
 
 
 SIMPLE_JWT = {
@@ -239,7 +253,7 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": False,
     "UPDATE_LAST_LOGIN": False,
     "ALGORITHM": "HS256",
-    "SIGNING_KEY": config("secret_id"),
+    "SIGNING_KEY": SECRET_KEY,
     "VERIFYING_KEY": "",
     "AUDIENCE": None,
     "ISSUER": None,
@@ -257,12 +271,13 @@ EMAIL_HOST_PASSWORD = config("APP_PASSWD")
 EMAIL_USE_TLS = True
 EMAIL_REPLY = config("EMAIL_REPLY")
 
-
 # social custom authentication settings
-AUTHENTICATION_BACKENDS = (
-    "social_core.backends.google.GoogleOAuth2",
+AUTHENTICATION_BACKENDS = (     
+    # "rest_framework."
     "django.contrib.auth.backends.ModelBackend",
+    # "rest_framework_simplejwt.backends.TokenBackend",
     "oauth2_provider.backends.OAuth2Backend",
+    "social_core.backends.google.GoogleOAuth2",
     # 'drf_social_oauth2.backends.DjangoOAuth2',
 )
 
@@ -300,7 +315,6 @@ SWAGGER_SETTINGS = {
             "email": "vaishnavprabhakarkoo@gmail.com",
         },
     },
-    # "DEFAULT_"
     "SERVE_INCLUDE_SCHEMA": True,
     "SECURITY_DEFINITIONS": {
         "Bearer": {
@@ -312,22 +326,59 @@ SWAGGER_SETTINGS = {
 }
 
 
-AI_SECRET_KEY=config('AI_KEY')
+AI_SECRET_KEY = config("AI_KEY")
 
 
-cloudinary.config( 
-    cloud_name = "darygrbe3", 
-    api_key = config("CLOUDINARY_KEY"),
-    api_secret = config("CLOUDINARY_SECRET"),
-    secure=True
+cloudinary.config(
+    cloud_name="darygrbe3",
+    api_key=config("CLOUDINARY_KEY"),
+    api_secret=config("CLOUDINARY_SECRET"),
+    secure=True,
 )
 
 
 CLOUDINARY_STORAGE = {
-
-    'CLOUD_NAME' : "darygrbe3", 
-    'API_KEY' : config("CLOUDINARY_KEY"),
-    'API_SECRET' : config("CLOUDINARY_SECRET"),
-    'secure':True,
-
+    "CLOUD_NAME": "darygrbe3",
+    "API_KEY": config("CLOUDINARY_KEY"),
+    "API_SECRET": config("CLOUDINARY_SECRET"),
+    "SECURE": True,
 }
+
+# Django channel layer configuration
+# CHANNEL_LAYERS = {
+#     "default": {
+#         "BACKEND": "channels_redis.core.RedisChannelLayer",
+#         "CONFIG": {
+#             # "hosts": [("127.0.0.1", 6379)],
+#             "hosts": [("redis-13539.c323.us-east-1-2.ec2.cloud.redislabs.com", 6379)],
+#         },
+#     },
+# }
+
+
+
+# django channel layer configuration
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+        "MIDDLEWARE": "chat.middleware.ChatMiddleware",
+    }
+}
+
+
+# redis configure
+
+# CACHES = {
+#     "default": {
+#         "BACKEND": "django_redis.cache.RedisCache",
+#         "LOCATION": "redis://127.0.0.1:6379/1",  # Use your Redis server details
+#         "OPTIONS": {
+#             "CLIENT_CLASS": "django_redis.client.DefaultClient",
+#         },
+#     }
+# }
+
+# Use Redis for Django's default cache
+CACHE_TTL = 60 * 60  # 60 minutes
+CACHE_MIDDLEWARE_ALIAS = "default"
+CACHE_MIDDLEWARE_SECONDS = CACHE_TTL

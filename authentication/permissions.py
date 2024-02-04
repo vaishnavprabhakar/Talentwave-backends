@@ -10,6 +10,6 @@ class RecruitersOnly(BasePermission):
     #     return True
 
     def has_permission(self, request, view):
-        if request.user.account_type == 'jobseeker':
+        if request.user.account_type == "jobseeker":
             return False
         return True

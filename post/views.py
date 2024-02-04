@@ -77,9 +77,9 @@ class PostCreateApiView(APIView):
             serializer = self.serializer_classes(posts_with_likes, many=True)
         return Response({"data": serializer.data}, status=status.HTTP_200_OK)
 
-
-
-    @swagger_auto_schema(operation_summary="Create Post", request_body=PostCreateSerializer)
+    @swagger_auto_schema(
+        operation_summary="Create Post", request_body=PostCreateSerializer
+    )
     @parser_classes([MultiPartParser, FormParser])
     @permission_classes([IsAuthenticated])
     def post(self, request):
@@ -90,8 +90,9 @@ class PostCreateApiView(APIView):
         serializer.save(created_by=request.user)
         return Response({"data": serializer.data}, status=201)
 
-
-    @swagger_auto_schema(operation_summary="Update Post", request_body=PostCreateSerializer)
+    @swagger_auto_schema(
+        operation_summary="Update Post", request_body=PostCreateSerializer
+    )
     @permission_classes([IsAuthenticated])
     def put(self, request, pk):
         id = pk
@@ -116,7 +117,6 @@ class PostCreateApiView(APIView):
             {"err": post_serializer.errors}, status=status.HTTP_400_BAD_REQUEST
         )
 
-   
     @permission_classes([IsOwnerOrReadOnly, IsAuthenticated])
     def delete(self, request, pk):
         post_id = pk
@@ -124,7 +124,7 @@ class PostCreateApiView(APIView):
             post = Post.objects.get(pk=post_id, created_by=request.user)
         except Post.DoesNotExist:
             return Response(status=404)
-        
+
         post.delete()
         return Response(
             {"msg": "successfuly deleted the post."}, status=status.HTTP_200_OK
@@ -141,14 +141,12 @@ class PostLikeView(APIView):
     def put(self, request, pk):
         post_id = pk
         current_user = request.user
-        
+
         try:
             liked_post = Like.objects.get(post=post_id)
         except Like.DoesNotExist:
-            return Response(
-                {"err": "Doesn't exists"}, status=status.HTTP_404_NOT_FOUND
-            )
-        
+            return Response({"err": "Doesn't exists"}, status=status.HTTP_404_NOT_FOUND)
+
         if current_user in liked_post.like.all():
             liked_post.like.remove(current_user)
             msg = "Unliked Post"
@@ -176,30 +174,37 @@ class CommentAPIView(APIView):
         post_related_obj = Comment.objects.filter(Q(post=requested_post))
         serializer = ListCommentSerializer(post_related_obj, many=True)
         return Response({"data": serializer.data}, status=status.HTTP_200_OK)
-    
 
     def post(self, request, pk):
         post_id = pk
         try:
             requested_post = Post.objects.get(id=post_id)
         except Post.DoesNotExist:
-            return Response({'info': "Post doesn't exist"}, status=status.HTTP_204_NO_CONTENT)
-        serializer = CommentCreateSerializer(data=request.data,context={'request':request})
+            return Response(
+                {"info": "Post doesn't exist"}, status=status.HTTP_204_NO_CONTENT
+            )
+        serializer = CommentCreateSerializer(
+            data=request.data, context={"request": request}
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save(kwargs=requested_post)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-            
 
     def delete(self, request, post_id, cmt_id):
         post_id = post_id
         cmt_id = cmt_id
         current_user = request.user
         post_comments = Comment.objects.filter(
-                        Q(post=get_object_or_404(Post, id=post_id))
-                        & Q(comment_by=current_user)
-                        & Q(id=cmt_id)
-                    ).first()
+            Q(post=get_object_or_404(Post, id=post_id))
+            & Q(comment_by=current_user)
+            & Q(id=cmt_id)
+        ).first()
         if post_comments:
             post_comments.delete()
             return Response({"info": "Comment deleted"}, status=status.HTTP_200_OK)
-        return Response({"err":"something went wrong.",},status=404)
+        return Response(
+            {
+                "err": "something went wrong.",
+            },
+            status=404,
+        )

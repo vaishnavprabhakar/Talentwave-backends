@@ -21,7 +21,7 @@ authentication/migrations
 # Byte-compiled / optimized / DLL files
 *.py[cod]
 *$py.class
-
+*.rdb
 # C extensions
 *.so
 *.yml

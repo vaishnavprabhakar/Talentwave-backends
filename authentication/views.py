@@ -5,7 +5,7 @@ from authentication.auth.auth_tokens import get_tokens_for_user
 from django.conf import settings
 from django.core.mail import EmailMessage
 from rest_framework.views import APIView
-from authentication.models import RecruiterProfile, User, Follow,Profile
+from authentication.models import RecruiterProfile, User, Follow, Profile
 from authentication.serializer import (
     CustomUserSerializer,
     LogUserSerializer,
@@ -14,7 +14,7 @@ from authentication.serializer import (
     SocialSerializer,
     FollowSerializer,
     RecruiterProfileCreateSerializer,
-    ListRecruiterProfile
+    ListRecruiterProfile,
 )
 from authentication.permissions import RecruitersOnly
 from rest_framework.response import Response
@@ -31,7 +31,8 @@ from social_core.exceptions import MissingBackend, AuthTokenError  # AuthForbidd
 from social_core.backends.google import GoogleOAuth2
 from authentication.permissions import RecruitersOnly
 from django.db.models import Prefetch
-from django.db.models import Q,Count,F
+from django.db.models import Q, Count, F
+
 # Create your views here.
 
 
@@ -39,13 +40,16 @@ class RecruiterProfileApiView(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated, RecruitersOnly]
 
-    @swagger_auto_schema(operation_summary='Listing the Recruiter Profie', operation_description='This will list the current recruiter profile', request_body=ListRecruiterProfile)
+    @swagger_auto_schema(
+        operation_summary="Listing the Recruiter Profie",
+        operation_description="This will list the current recruiter profile",
+        request_body=ListRecruiterProfile,
+    )
     def get(self, request):
         current_user = request.user
         user_profile = RecruiterProfile.objects.get(user=current_user)
         serializer = ListRecruiterProfile(user_profile)
         return Response(serializer.data, status=status.HTTP_200_OK)
-        
 
     @swagger_auto_schema(
         operation_summary="Register user",
@@ -54,7 +58,7 @@ class RecruiterProfileApiView(APIView):
     )
     def post(self, request):
         current_user = User.objects.get(email=request.user)
-        if isinstance(current_user,RecruiterProfile):
+        if isinstance(current_user, RecruiterProfile):
             serializer = RecruiterProfileCreateSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save(kwargs=request.user)
@@ -67,7 +71,6 @@ class RecruiterProfileApiView(APIView):
 
 
 class FollowAPI(APIView):
-    
     @swagger_auto_schema(
         operation_summary="Register user",
         operation_description="This will create user and send otp for users email id with smtp.",
@@ -226,24 +229,23 @@ class UserLogApi(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
-
 class UserProfileApi(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser, JSONParser]
-   
 
-    @swagger_auto_schema(operation_summary="Profile create",request_body=ProfileSerializer)
+    @swagger_auto_schema(
+        operation_summary="Profile create", request_body=ProfileSerializer
+    )
     def get(self, request):
         current_user = request.user
-        profile_related_obj = Profile.objects.select_related('user').filter(user=current_user).first()
+        profile_related_obj = (
+            Profile.objects.select_related("user").filter(user=current_user).first()
+        )
         user_serializer = ProfileSerializer(
             instance=profile_related_obj, context={"request": request}
         )
         return Response({"user_data": user_serializer.data}, status=status.HTTP_200_OK)
-
-
 
     @swagger_auto_schema(
         operation_summary="Profile Update", request_body=UserSerializer
@@ -251,7 +253,9 @@ class UserProfileApi(APIView):
     def put(self, request):
         current_user = request.user
         profile_serializer = ProfileSerializer(
-            data=request.data, instance=current_user.profile, context={"request": request},
+            data=request.data,
+            instance=current_user.profile,
+            context={"request": request},
         )
 
         if profile_serializer.is_valid():

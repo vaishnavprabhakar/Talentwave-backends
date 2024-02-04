@@ -9,7 +9,6 @@ from post.serializer import PostListSerializer
 from cloudinary import uploader
 
 
-
 class FollowSerializer(serializers.ModelSerializer):
     class Meta:
         model = Follow
@@ -92,11 +91,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = "__all__"
 
-    
-
 
 class ProfileSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Profile
         fields = (
@@ -109,16 +105,15 @@ class ProfileSerializer(serializers.ModelSerializer):
             "city",
         )
         extra_kwargs = {
-            'first_name' : {'required': True},
-            'last_name': {'required': True},
-            'profile_image': {'required': False},
-            'bio': {'required': True},
-            'title': {'required': True},
-            'dob': {'required': True},
-            'phone': {'required': True},
-            'city': {'required': True},                        
+            "first_name": {"required": True},
+            "last_name": {"required": True},
+            "profile_image": {"required": False},
+            "bio": {"required": True},
+            "title": {"required": True},
+            "dob": {"required": True},
+            "phone": {"required": True},
+            "city": {"required": True},
         }
-    
 
     def create(self, validated_data):
         return super().create(**validated_data)
@@ -143,19 +138,28 @@ class ProfileSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-    
 
 class ListRecruiterProfile(serializers.ModelSerializer):
-
     class Meta:
         model = RecruiterProfile
-        fields = [ "user", "company_name","position","proffessional_card","created_at"]
+        fields = [
+            "user",
+            "company_name",
+            "position",
+            "proffessional_card",
+            "created_at",
+        ]
         read_only_fields = ["user"]
+
 
 class RecruiterProfileCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model: RecruiterProfile
-        fields = ["user", "company_name", "position",]
+        fields = [
+            "user",
+            "company_name",
+            "position",
+        ]
         read_only_fields = ["user"]
 
     def create(self, validate_data):
@@ -165,12 +169,9 @@ class RecruiterProfileCreateSerializer(serializers.ModelSerializer):
         return
 
 
-
 class UserSerializer(serializers.ModelSerializer):
     profile = UserProfileSerializer()
-    
+
     class Meta:
         model = User
-        fields = ("profile", "email", "username", "account_type")
-
-
+        fields = ("email", "username", "account_type", "profile",)

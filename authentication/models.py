@@ -30,8 +30,6 @@ class User(AbstractBaseUser):
         default=False,
     )
 
-    
-
     @property
     def is_staff(self):
         return self.is_admin
@@ -104,16 +102,15 @@ class RecruiterProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     company_name = models.CharField(max_length=256)
     position = models.CharField(max_length=150, choices=POSITION_CHOICE)
-    proffessional_card = models.FileField(upload_to='proffessional_cards/',serialize=True, unique=True, null=True)
+    proffessional_card = models.FileField(
+        upload_to="proffessional_cards/", serialize=True, unique=True, null=True
+    )
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
 
     def __str__(self):
         return f"{self.user}"
 
 
-
-# TODO : Related to this model.
-    
 class Follow(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     following = models.ManyToManyField(User, related_name="following")
@@ -121,4 +118,3 @@ class Follow(models.Model):
 
     def __str__(self):
         return f"{self.user}'s followers"
-

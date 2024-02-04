@@ -1,11 +1,12 @@
 import debug_toolbar
+from drf_yasg import openapi
+from drf_yasg.views import get_schema_view
 from django.conf import settings
 from django.urls import path, include, re_path
 from django.contrib import admin
 from authentication import views
 from rest_framework.permissions import AllowAny
-from drf_yasg.views import get_schema_view
-from drf_yasg import openapi
+
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -37,10 +38,11 @@ urlpatterns = [
         views.GoogleSocialAuthView.as_view(),
         name="google-signup",
     ),
-    path("", include("authentication.urls")),
+    path("au/", include("authentication.urls")),
     path("", include("post.urls"), name="post"),
     path("o/", include("oauth2_provider.urls", namespace="oauth2_provider")),
     path("accounts/", include("allauth.urls"), name="allauth"),
     path("debug/", include(debug_toolbar.urls)),
-    path('company/', include('company.urls'))
+    path("company/", include("company.urls")),
+    path("w/", include("chat.urls")),
 ]

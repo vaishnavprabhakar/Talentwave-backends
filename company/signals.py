@@ -5,6 +5,6 @@ from company.models import Job
 
 
 @receiver(post_save, sender=User)
-def user_instance_for_company(sender, instance,created,**kwargs):
-    if created and instance.account_type == 'recruiter':
+def user_instance_for_company(sender, instance, created, **kwargs):
+    if created and instance.account_type == "recruiter":
         Job.objects.create(user=instance)

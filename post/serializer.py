@@ -1,25 +1,19 @@
-
 from django.db.models import Count
 from rest_framework import serializers
 from .models import Post, Like, Comment
-from Talentwave.cloud.storage import upload_to_cloud,update_image_resource
+from Talentwave.cloud.storage import upload_to_cloud, update_image_resource
 from cloudinary import uploader
 
-class CommentCreateSerializer(serializers.Serializer):
 
+class CommentCreateSerializer(serializers.Serializer):
     comment = serializers.CharField()
 
-    def save(self,**kwargs):
-        user = self.context.get('request').user
-        post = kwargs.get('kwargs')
-        comment = self.validated_data.get('comment')
-        cmt_obj = Comment.objects.create(
-        post=post,
-        body=comment,
-        comment_by=user
-        )
+    def save(self, **kwargs):
+        user = self.context.get("request").user
+        post = kwargs.get("kwargs")
+        comment = self.validated_data.get("comment")
+        cmt_obj = Comment.objects.create(post=post, body=comment, comment_by=user)
         return cmt_obj
-
 
     def validate(self, attrs):
         comment = attrs.get("comment")
@@ -31,18 +25,15 @@ class CommentCreateSerializer(serializers.Serializer):
 
 
 class ListCommentSerializer(serializers.ModelSerializer):
-
     username = serializers.ReadOnlyField(source="comment_by.username")
     comment_body = serializers.ReadOnlyField(source="body")
 
-
     class Meta:
         model = Comment
-        fields = "__all__"#["id", "post","comment_body", "username"]
+        fields = "__all__"  # ["id", "post","comment_body", "username"]
 
 
 class LikeCreateSerializer(serializers.ModelSerializer):
-    
     class Meta:
         model = Like
         fields = ["like", "post"]
@@ -52,8 +43,12 @@ class LikeCreateSerializer(serializers.ModelSerializer):
 class ListLikeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Like
-        fields = ["like",]
-        read_only_fields = ["like",]
+        fields = [
+            "like",
+        ]
+        read_only_fields = [
+            "like",
+        ]
 
     # def to_representation(self, instance):
     #     return instance
@@ -101,7 +96,9 @@ class PostCreateSerializer(serializers.Serializer):
 
     def __init__(self, *args, **kwargs):
         if kwargs["context"]["request"].user.account_type == "jobseeker":
-            fields = self.get_fields()
+            self.fields.get("type").read_only = True
+            self.fields.get("title").required = True
+            self.fields.get("description").required = True
         elif kwargs["context"]["request"].user.account_type == "recruiter":
             self.fields.get("type").required = True
             self.fields.get("title").required = True
@@ -109,16 +106,17 @@ class PostCreateSerializer(serializers.Serializer):
         super().__init__(*args, **kwargs)
 
     def create(self, validated_data):
-        image = validated_data.get('image')
+        image = validated_data.get("image")
         post_obj = Post.objects.create(**validated_data)
         if image is not None:
-            upload_to_cloud(obj=post_obj.image, folder='Talentwave/', overwrite=False)
+            upload_to_cloud(obj=post_obj.image, folder="Talentwave/", overwrite=False)
         return post_obj
-    
 
     def update(self, instance, validated_data):
         instance.image = validated_data.get("image", instance.image)
-        update_image_resource(folder='Talentwave/', overwrite=True,public_id=instance.image)
+        update_image_resource(
+            folder="Talentwave/", overwrite=True, public_id=instance.image
+        )
         instance.title = validated_data.get("title", instance.title)
         instance.description = validated_data.get("description", instance.description)
         return instance
