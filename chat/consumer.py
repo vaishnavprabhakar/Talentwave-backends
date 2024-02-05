@@ -10,7 +10,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def websocket_connect(self, event):
         self.user = self.scope['user']
-        if self.user is not None and not :
+        if self.user is not None:
             self.room_name = self.scope['url_route']['kwargs']['room_name']
             self.room_group_name = f"chat-{self.room_name}"
             await self.channel_layer.group_add(self.room_group_name, self.channel_name)
