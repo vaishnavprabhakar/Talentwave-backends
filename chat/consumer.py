@@ -1,26 +1,16 @@
 import json
-from django.conf import settings
 from channels.generic.websocket import (
             AsyncWebsocketConsumer,
             )
-# from channels import auth
-from authentication.models import User
-from django.contrib.auth.models import AnonymousUser
-from djangochannelsrestframework.decorators import transaction
-from channels.consumer import get_channel_layer
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework.permissions import IsAuthenticated
-from channels.layers import get_channel_layer
 
 
 
 
 class ChatConsumer(AsyncWebsocketConsumer):    
 
-    async def connect(self):
-
-        if self.scope['user'] is not None:
-            
+    async def websocket_connect(self, event):
+        self.user = self.scope['user']
+        if self.user is not None and not :
             self.room_name = self.scope['url_route']['kwargs']['room_name']
             self.room_group_name = f"chat-{self.room_name}"
             await self.channel_layer.group_add(self.room_group_name, self.channel_name)
