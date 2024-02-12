@@ -1,4 +1,4 @@
-from .serializer import ListRoomSerializer,ListMessageSerializer
+from .serializer import ListRoomSerializer, ListMessageSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -9,7 +9,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from authentication.models import Profile
 from django.db.models import Q
-
 
 
 class ListUserApiView(APIView):

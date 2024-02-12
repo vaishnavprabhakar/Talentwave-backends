@@ -174,4 +174,9 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("email", "username", "account_type", "profile",)
+        fields = (
+            "email",
+            "username",
+            "account_type",
+            "profile",
+        )

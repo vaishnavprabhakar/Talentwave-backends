@@ -2,8 +2,15 @@ from django.db import models
 
 
 class Room(models.Model):
-    initiator = models.ForeignKey("authentication.User", on_delete=models.DO_NOTHING, related_name='sender', null=True)
-    reciever = models.ForeignKey("authentication.User", on_delete=models.DO_NOTHING, null=True)
+    initiator = models.ForeignKey(
+        "authentication.User",
+        on_delete=models.DO_NOTHING,
+        related_name="sender",
+        null=True,
+    )
+    reciever = models.ForeignKey(
+        "authentication.User", on_delete=models.DO_NOTHING, null=True
+    )
     name = models.CharField(max_length=50, unique=True)
 
     def __str__(self):

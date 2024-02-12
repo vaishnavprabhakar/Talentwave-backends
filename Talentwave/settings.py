@@ -218,7 +218,6 @@ DEBUG_TOOLBAR_PANELS = [
 ]
 
 
-
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTStatelessUserAuthentication",
@@ -234,7 +233,7 @@ REST_FRAMEWORK = {
     },
     "DEFAULT_PAGINATION_CLASS": {
         "rest_framework.pagination.PageNumberPagination",
-    }
+    },
 }
 
 DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
@@ -265,7 +264,7 @@ EMAIL_USE_TLS = True
 EMAIL_REPLY = config("EMAIL_REPLY")
 
 # social custom authentication settings
-AUTHENTICATION_BACKENDS = (     
+AUTHENTICATION_BACKENDS = (
     # "rest_framework."
     "django.contrib.auth.backends.ModelBackend",
     # "rest_framework_simplejwt.backends.TokenBackend",
@@ -335,7 +334,6 @@ CLOUDINARY_STORAGE = {
 }
 
 
-
 # django channel layer configuration
 CHANNEL_LAYERS = {
     "default": {
@@ -343,7 +341,6 @@ CHANNEL_LAYERS = {
         "MIDDLEWARE": "chat.middleware.ChatMiddleware",
     }
 }
-
 
 
 # Redis for Django's default cache
