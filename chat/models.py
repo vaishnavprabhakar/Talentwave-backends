@@ -2,7 +2,7 @@ from django.db import models
 
 
 class Room(models.Model):
-    initiator = models.OneToOneField("authentication.User", on_delete=models.DO_NOTHING, related_name='sender', null=True)
+    initiator = models.ForeignKey("authentication.User", on_delete=models.DO_NOTHING, related_name='sender', null=True)
     reciever = models.ForeignKey("authentication.User", on_delete=models.DO_NOTHING, null=True)
     name = models.CharField(max_length=50, unique=True)
 
@@ -21,10 +21,10 @@ class Message(models.Model):
     chat_body = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
     room = models.ForeignKey(Room, on_delete=models.DO_NOTHING)
-    attachment = models.FileField()
+    attachment = models.FileField(max_length=256)
 
     def __str__(self):
-        return f"{self.sender} :: {self.reciever}"
+        return f"{self.sender}-{self.reciever}"
 
     class Meta:
         app_label = "chat"

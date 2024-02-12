@@ -222,10 +222,7 @@ DEBUG_TOOLBAR_PANELS = [
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTStatelessUserAuthentication",
-        # "rest_framework_simplejwt.tokens.TokenBackend",
-        # 'drf_social_oauth2.backends.DjangoOAuth2',
         "oauth2_provider.contrib.rest_framework.OAuth2Authentication",  # django-oauth-toolkit >= 1.0.0
-        # 'drf_social_oauth2.authentication.SocialAuthentication',
         "rest_framework.authentication.SessionAuthentication",
     ),
     "DEFAULT_THROTTLE_CLASSES": [
@@ -233,18 +230,14 @@ REST_FRAMEWORK = {
         # "rest_framework.throttling.UserRateThrottle",
     ],
     "DEFAULT_THROTTLE_RATES": {
-        # "one_post_per_day": "1/day",  # Adjust the rate limit as needed
-        # Set a default rate for other authenticated users
+        # "one_post_per_day": "1/day",
     },
+    "DEFAULT_PAGINATION_CLASS": {
+        "rest_framework.pagination.PageNumberPagination",
+    }
 }
 
-
-# MEDIA_ROOT = os.path.join(BASE_DIR / "media")
-# MEDIA_URL = "/media/"
 DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
-
-
-
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=10),
@@ -292,9 +285,6 @@ SOCIAL_AUTH_GOOGLE_OAUTH_SECRET = config("GOOGLE_CLIENT_SECRET")
 
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
-        # For each OAuth based provider, either add a ``SocialApp``
-        # (``socialaccount`` app) containing the required client
-        # credentials, or list them here:
         "APP": {
             "client_id": SOCIAL_AUTH_GOOGLE_OAUTH_KEY,
             "secret": SOCIAL_AUTH_GOOGLE_OAUTH_SECRET,
@@ -325,10 +315,11 @@ SWAGGER_SETTINGS = {
     },
 }
 
-
+# gemini configuration
 AI_SECRET_KEY = config("AI_KEY")
 
 
+# clourdinary cloud storage configuration
 cloudinary.config(
     cloud_name="darygrbe3",
     api_key=config("CLOUDINARY_KEY"),
@@ -336,24 +327,12 @@ cloudinary.config(
     secure=True,
 )
 
-
 CLOUDINARY_STORAGE = {
     "CLOUD_NAME": "darygrbe3",
     "API_KEY": config("CLOUDINARY_KEY"),
     "API_SECRET": config("CLOUDINARY_SECRET"),
     "SECURE": True,
 }
-
-# Django channel layer configuration
-# CHANNEL_LAYERS = {
-#     "default": {
-#         "BACKEND": "channels_redis.core.RedisChannelLayer",
-#         "CONFIG": {
-#             # "hosts": [("127.0.0.1", 6379)],
-#             "hosts": [("redis-13539.c323.us-east-1-2.ec2.cloud.redislabs.com", 6379)],
-#         },
-#     },
-# }
 
 
 
@@ -366,19 +345,8 @@ CHANNEL_LAYERS = {
 }
 
 
-# redis configure
 
-# CACHES = {
-#     "default": {
-#         "BACKEND": "django_redis.cache.RedisCache",
-#         "LOCATION": "redis://127.0.0.1:6379/1",  # Use your Redis server details
-#         "OPTIONS": {
-#             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-#         },
-#     }
-# }
-
-# Use Redis for Django's default cache
+# Redis for Django's default cache
 CACHE_TTL = 60 * 60  # 60 minutes
 CACHE_MIDDLEWARE_ALIAS = "default"
 CACHE_MIDDLEWARE_SECONDS = CACHE_TTL

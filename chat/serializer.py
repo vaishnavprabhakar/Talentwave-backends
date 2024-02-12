@@ -3,13 +3,13 @@ from .models import Room, Message
 from authentication.models import User
 
 
-class RoomSerializer(serializers.ModelSerializer):
+class ListRoomSerializer(serializers.ModelSerializer):
     class Meta:
         model = Room
         exclude = ["id"]
 
 
-class MessageSerializer(serializers.ModelSerializer):
+class ListMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
         fields = "__all__"

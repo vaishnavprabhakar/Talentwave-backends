@@ -16,12 +16,12 @@ class ChatMiddleware(BaseMiddleware):
     def __init__(self, inner):
         self.inner = inner
 
-    async def __call__(self, scope, receive, send):
+    async def __call__(self, scope, receive=None, send=None):
         authorization_header = dict(scope.get("headers", {})).get(b'authorization')
         jwt_token = str(authorization_header).split(' ')[1].strip('\'')
         user_obj = await self.get_user_from_token(jwt_token)
         scope['user'] = user_obj
-        return await super().__call__(scope, receive, send)
+        return await super().__call__(scope=scope,receive=receive, send=send)
 
     @database_sync_to_async
     def get_user_from_token(self, jwt_token):
